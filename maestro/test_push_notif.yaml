@@ -1,0 +1,10 @@
+appId: com.pushnotifapp
+---
+- launchApp:
+    clearState: true
+
+- tapOn: "Autoriser"
+- assertVisible: "🔹 Permission des notifications accordée"
+
+- tapOn: "Envoyer Notification"
+- assertVisible: "🔔 Notification reçue"
