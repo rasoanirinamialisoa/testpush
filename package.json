@@ -10,8 +10,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@react-native-firebase/app": "^21.8.0",
-    "@react-native-firebase/messaging": "^21.8.0",
+    "@notifee/react-native": "^9.1.8",
+    "@react-native-firebase/app": "^21.10.0",
+    "@react-native-firebase/messaging": "^21.10.0",
     "react": "18.3.1",
     "react-native": "0.77.0"
   },

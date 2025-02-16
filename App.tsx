@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { requestUserPermission, notificationListener } from './src/firebaseConfig';
+import { requestUserPermission, notificationListener, createNotificationChannel, } from './src/firebaseConfig';
 
 const App = () => {
     useEffect(() => {
         requestUserPermission();
+        createNotificationChannel();
         notificationListener();
     }, []);
 

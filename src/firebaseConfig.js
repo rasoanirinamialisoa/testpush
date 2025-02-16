@@ -1,17 +1,30 @@
 import messaging from '@react-native-firebase/messaging';
-import { Alert, Platform } from 'react-native';
+import { Alert, Platform, PermissionsAndroid } from 'react-native';
+import notifee from '@notifee/react-native';
 
 export async function requestUserPermission() {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    if (enabled) {
-        console.log('🔹 Permission des notifications accordée');
-        await getToken();
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log('🔹 Permission des notifications accordée');
+            await getToken();
+        } else {
+            console.log('🔸 Permission des notifications refusée');
+        }
     } else {
-        console.log('🔸 Permission des notifications refusée');
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+        if (enabled) {
+            console.log('🔹 Permission des notifications accordée');
+            await getToken();
+        } else {
+            console.log('🔸 Permission des notifications refusée');
+        }
     }
 }
 
@@ -25,6 +38,23 @@ export async function getToken() {
         }
     } catch (error) {
         console.log('❌ Erreur lors de la récupération du token:', error);
+    }
+}
+
+export async function createNotificationChannel() {
+    if (Platform.OS === 'android') {
+        const channelId = 'default_channel_id';
+        const channelName = 'Default Channel';
+        const channelDescription = 'Default Channel for notifications';
+
+        await notifee.createChannel({
+            id: channelId,
+            name: channelName,
+            description: channelDescription,
+            importance: 4,
+            sound: 'default',
+        });
+        console.log('🔔 Canal de notification créé');
     }
 }
 
@@ -43,6 +73,17 @@ export function notificationListener() {
 
     messaging().onMessage(async remoteMessage => {
         console.log('📨 Notification reçue en foreground:', remoteMessage);
-        Alert.alert(remoteMessage.notification?.title, remoteMessage.notification?.body);
+
+        if (Platform.OS === 'android') {
+            await notifee.displayNotification({
+                title: remoteMessage.notification?.title,
+                body: remoteMessage.notification?.body,
+                android: {
+                    channelId: 'default_channel_id',
+                },
+            });
+        } else {
+            Alert.alert(remoteMessage.notification?.title, remoteMessage.notification?.body);
+        }
     });
 }
